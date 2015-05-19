@@ -127,11 +127,13 @@ releaseXMF (Utf8 fs) = releaseUtf8Font fs
 releaseXMF (Core fs) = releaseCoreFont fs
 
 #ifdef XFT
-xftTxtExtents' :: Display -> [XftFont] -> String -> IO XGlyphInfo
-xftTxtExtents' d fs string = do
-    chunks <- getChunks d fs string
-    let (_, _, gi, _, _) = last chunks
-    return gi
+xftTextExtents' :: Display -> [XftFont] -> String -> IO XGlyphInfo
+xftTextExtents' d fs string = case string of
+    [] -> xftTextExtents d (head fs) string
+    _  -> do
+        chunks <- getChunks d fs string
+        let (_, _, gi, _, _) = last chunks
+        return gi
 
 xftfont_ascent' :: [XftFont] -> IO Int
 xftfont_ascent' = (fmap maximum) . (mapM xftfont_ascent)
@@ -146,7 +148,7 @@ textWidthXMF _   (Utf8 fs) s = return $ fi $ wcTextEscapement fs s
 textWidthXMF _   (Core fs) s = return $ fi $ textWidth fs s
 #ifdef XFT
 textWidthXMF dpy (Xft xftdraw) s = liftIO $ do
-    gi <- xftTxtExtents' dpy xftdraw s
+    gi <- xftTextExtents' dpy xftdraw s
     return $ xglyphinfo_xOff gi
 #endif
 
@@ -204,7 +206,7 @@ printStringXMF dpy drw fs@(Xft font) gc fc bc x y s = do
       visual   = defaultVisualOfScreen screen
   bcolor <- stringToPixel dpy bc
   (a,d)  <- textExtentsXMF fs s
-  gi <- io $ xftTxtExtents' dpy font s
+  gi <- io $ xftTextExtents' dpy font s
   io $ setForeground dpy gc bcolor
   io $ fillRectangle dpy drw gc (x - fi (xglyphinfo_x gi))
                                 (y - fi a)
