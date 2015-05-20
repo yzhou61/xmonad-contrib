@@ -77,6 +77,8 @@ data Theme =
           , activeTextColor     :: String                   -- ^ Color of the text of the active window
           , inactiveTextColor   :: String                   -- ^ Color of the text of the inactive window
           , urgentTextColor     :: String                   -- ^ Color of the text of the urgent window
+          , borderWidthH        :: Dimension                -- ^ Horizontal border width
+          , borderWidthV        :: Dimension                -- ^ Vertical border width
           , fontName            :: String                   -- ^ Font name
           , decoWidth           :: Dimension                -- ^ Maximum width of the decorations (if supported by the 'DecorationStyle')
           , decoHeight          :: Dimension                -- ^ Height of the decorations
@@ -97,6 +99,8 @@ instance Default Theme where
           , activeTextColor     = "#FFFFFF"
           , inactiveTextColor   = "#BFBFBF"
           , urgentTextColor     = "#FF0000"
+          , borderWidthH        = 1
+          , borderWidthV        = 1
           , fontName            = "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
           , decoWidth           = 200
           , decoHeight          = 20
@@ -405,7 +409,7 @@ updateDeco sh t fs ((w,_),(Just dw,Just (Rectangle _ _ wh ht))) = do
       strs = name : map fst (windowTitleAddons t)
       i_als = map snd (windowTitleIcons t)
       icons = map fst (windowTitleIcons t)
-  paintTextAndIcons dw fs wh ht 1 bc borderc tc bc als strs i_als icons
+  paintTextAndIcons dw fs wh ht (borderWidthH t) (borderWidthV t) bc borderc tc bc als strs i_als icons
 updateDeco _ _ _ (_,(Just w,Nothing)) = hideWindow w
 updateDeco _ _ _ _ = return ()
 
