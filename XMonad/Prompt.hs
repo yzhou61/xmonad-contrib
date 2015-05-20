@@ -127,6 +127,7 @@ data XPState =
 
 data XPConfig =
     XPC { font              :: String     -- ^ Font
+        , promptColor       :: String     -- ^ Color of the prompt text
         , bgColor           :: String     -- ^ Background color
         , fgColor           :: String     -- ^ Font color
         , fgHLight          :: String     -- ^ Font color of a highlighted completion entry
@@ -235,6 +236,7 @@ amberXPConfig, defaultXPConfig, greenXPConfig :: XPConfig
 instance Default XPConfig where
   def =
     XPC { font              = "-misc-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
+        , promptColor       = "red"
         , bgColor           = "grey22"
         , fgColor           = "grey80"
         , fgHLight          = "black"
@@ -866,25 +868,26 @@ printPrompt drw = do
   let (gc,(c,(d,fs))) = (gcon &&& config &&& dpy &&& fontS) st
       (prt,(com,off)) = (show . currentXPMode &&& command &&& offset) st
       str = prt ++ com
-      -- break the string in 3 parts: till the cursor, the cursor and the rest
-      (f,p,ss) = if off >= length com
-                 then (str, " ","") -- add a space: it will be our cursor ;-)
+      -- break the string in 4 parts: prompt text, till the cursor, the cursor and the rest
+      (prompt,comm,cursor,rest) = if off >= length com
+                 then (' ':prt,com," ","") -- add a space: it will be our cursor ;-)
                  else let (a,b) = (splitAt off com)
-                      in (prt ++ a, [head b], tail b)
+                      in (' ':prt, a, [head b], tail b)
       ht = height c
-  fsl <- io $ textWidthXMF (dpy st) fs f
-  psl <- io $ textWidthXMF (dpy st) fs p
+  p0 <- io $ textWidthXMF (dpy st) fs prompt
+  p1 <- io $ textWidthXMF (dpy st) fs comm
+  p2 <- io $ textWidthXMF (dpy st) fs cursor
   (asc,desc) <- io $ textExtentsXMF fs str
   let y = fi $ ((ht - fi (asc + desc)) `div` 2) + fi asc
-      x = (asc + desc) `div` 2
 
   let draw = printStringXMF d drw fs gc
-  -- print the first part
-  draw (fgColor c) (bgColor c) x y f
+  -- print the first 2 parts
+  draw (fgColor c) (promptColor c) 0 y prompt
+  draw (fgColor c) (bgColor c) (fromIntegral p0) y comm
   -- reverse the colors and print the "cursor" ;-)
-  draw (bgColor c) (fgColor c) (x + fromIntegral fsl) y p
+  draw (bgColor c) (fgColor c) (fromIntegral (p0 + p1)) y cursor
   -- reverse the colors and print the rest of the string
-  draw (fgColor c) (bgColor c) (x + fromIntegral (fsl + psl)) y ss
+  draw (fgColor c) (bgColor c) (fromIntegral (p0 + p1 + p2)) y rest
 
 -- get the current completion function depending on the active mode
 getCompletionFunction :: XPState -> ComplFunction
