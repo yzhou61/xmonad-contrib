@@ -178,7 +178,7 @@ paintWindow' win (Rectangle _ _ wh ht) bwh bwv color b_color strStuff iconStuff 
   io $ fillRectangle d p gc 0 0 wh ht
   -- and now again
   io $ setForeground d gc color'
-  io $ fillRectangle d p gc (fi bwh) (fi bwv) (wh - (bwh * 2)) (ht - (bwv * 2))
+  io $ fillRectangle d p gc (fi bwv) (fi bwh) (wh - (bwv * 2)) (ht - (bwh * 2))
   -- paint strings
   when (isJust strStuff) $ do
     let (xmf,fc,bc,strAndPos) = fromJust strStuff
