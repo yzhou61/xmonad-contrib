@@ -21,6 +21,7 @@ module XMonad.Prompt.Window
     windowPromptGoto,
     windowPromptBring,
     windowPromptBringCopy,
+    windowPromptClose,
     WindowPrompt,
     ) where
 
@@ -59,18 +60,20 @@ import XMonad.Actions.WindowBringer
 -- For detailed instruction on editing the key binding see
 -- "XMonad.Doc.Extending#Editing_key_bindings".
 
-data WindowPrompt = Goto | Bring | BringCopy
+data WindowPrompt = Goto | Bring | BringCopy | Close
 instance XPrompt WindowPrompt where
     showXPrompt Goto      = "Go to window: "
     showXPrompt Bring     = "Bring window: "
     showXPrompt BringCopy = "Bring a copy: "
+    showXPrompt Close     = "Close window: "
     commandToComplete _ c = c
     nextCompletion      _ = getNextCompletion
 
-windowPromptGoto, windowPromptBring, windowPromptBringCopy :: XPConfig -> X ()
+windowPromptGoto, windowPromptBring, windowPromptBringCopy, windowPromptClose :: XPConfig -> X ()
 windowPromptGoto  = doPrompt Goto
 windowPromptBring = doPrompt Bring
 windowPromptBringCopy = doPrompt BringCopy
+windowPromptClose = doPrompt Close
 
 -- | Pops open a prompt with window titles. Choose one, and you will be
 -- taken to the corresponding workspace.
@@ -80,6 +83,7 @@ doPrompt t c = do
          Goto  -> fmap gotoAction  windowMap
          Bring -> fmap bringAction windowMap
          BringCopy -> fmap bringCopyAction windowMap
+         Close -> fmap closeAction windowMap
   wm <- windowMap
   mkXPrompt t c (compList wm) a
 
@@ -88,6 +92,7 @@ doPrompt t c = do
       gotoAction       = winAction W.focusWindow
       bringAction      = winAction bringWindow
       bringCopyAction  = winAction bringCopyWindow
+      closeAction      = winAction W.delete
 
       compList m s = return . filter (searchPredicate c s) . map fst . M.toList $ m
 
