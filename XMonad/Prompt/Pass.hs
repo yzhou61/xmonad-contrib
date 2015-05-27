@@ -37,6 +37,7 @@ module XMonad.Prompt.Pass (
                               passPrompt
                             , passGeneratePrompt
                             , passRemovePrompt
+                            , passShowPrompt
                             ) where
 
 import Control.Monad (liftM)
@@ -52,7 +53,7 @@ import XMonad.Prompt ( XPrompt
 import System.Directory (getHomeDirectory)
 import System.FilePath (takeExtension, dropExtension, combine)
 import System.Posix.Env (getEnv)
-import XMonad.Util.Run (runProcessWithInput)
+import XMonad.Util.Run (runProcessWithInput, runInTerm)
 
 -- $usages
 -- You can use this module with the following in your @~\/.xmonad\/xmonad.hs@:
@@ -108,6 +109,9 @@ mkPassPrompt promptLabel passwordFunction xpconfig = do
 passPrompt :: XPConfig -> X ()
 passPrompt = mkPassPrompt "Select password" selectPassword
 
+passShowPrompt :: XPConfig -> X ()
+passShowPrompt = mkPassPrompt "Select password" selectShowPassword
+
 -- | A prompt to generate a password for a given entry.
 -- This can be used to override an already stored entry.
 -- (Beware that no confirmation is asked)
@@ -125,6 +129,9 @@ passRemovePrompt = mkPassPrompt "Remove password" removePassword
 --
 selectPassword :: String -> X ()
 selectPassword passLabel = spawn $ "pass --clip " ++ passLabel
+
+selectShowPassword :: String -> X ()
+selectShowPassword passLabel = runInTerm "" $ "zsh -c \"pass " ++ passLabel ++ "| less\""
 
 -- | Generate a 30 characters password for a given entry.
 -- If the entry already exists, it is updated with a new password.
