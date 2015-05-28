@@ -110,10 +110,10 @@ mkPassPrompt = mkPassPrompt' passwordStoreFolder
 -- | A prompt to retrieve a password from a given entry.
 --
 passPrompt :: XPConfig -> X ()
-passPrompt = mkPassPrompt' (return "/home/yzhou/Dropbox/store0") "Select password" selectPassword
+passPrompt = mkPassPrompt' (return "/home/yzhou/.password-store/store0") "Select password" selectPassword
 
 passShowPrompt :: XPConfig -> X ()
-passShowPrompt = mkPassPrompt' (return "/home/yzhou/Dropbox/store1") "Select password" selectShowPassword
+passShowPrompt = mkPassPrompt' (return "/home/yzhou/.password-store/store1") "Select password" selectShowPassword
 
 -- | A prompt to generate a password for a given entry.
 -- This can be used to override an already stored entry.
