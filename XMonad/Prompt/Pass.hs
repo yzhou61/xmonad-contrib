@@ -99,18 +99,21 @@ passwordStoreFolder =
 
 -- | A pass prompt factory
 --
-mkPassPrompt :: PromptLabel -> (String -> X ()) -> XPConfig -> X ()
-mkPassPrompt promptLabel passwordFunction xpconfig = do
-  passwords <- io (passwordStoreFolder >>= getPasswords)
+mkPassPrompt' :: (IO String) -> PromptLabel -> (String -> X ()) -> XPConfig -> X ()
+mkPassPrompt' dir promptLabel passwordFunction xpconfig = do
+  passwords <- io (dir >>= getPasswords)
   mkXPrompt (Pass promptLabel) xpconfig (mkComplFunFromList passwords) passwordFunction
+
+mkPassPrompt :: PromptLabel -> (String -> X ()) -> XPConfig -> X ()
+mkPassPrompt = mkPassPrompt' passwordStoreFolder
 
 -- | A prompt to retrieve a password from a given entry.
 --
 passPrompt :: XPConfig -> X ()
-passPrompt = mkPassPrompt "Select password" selectPassword
+passPrompt = mkPassPrompt' (return "/home/yzhou/Dropbox/store0") "Select password" selectPassword
 
 passShowPrompt :: XPConfig -> X ()
-passShowPrompt = mkPassPrompt "Select password" selectShowPassword
+passShowPrompt = mkPassPrompt' (return "/home/yzhou/Dropbox/store1") "Select password" selectShowPassword
 
 -- | A prompt to generate a password for a given entry.
 -- This can be used to override an already stored entry.
@@ -128,10 +131,10 @@ passRemovePrompt = mkPassPrompt "Remove password" removePassword
 -- | Select a password.
 --
 selectPassword :: String -> X ()
-selectPassword passLabel = spawn $ "pass --clip " ++ passLabel
+selectPassword passLabel = spawn $ "/home/yzhou/bin/scripts/pass0 --clip " ++ passLabel
 
 selectShowPassword :: String -> X ()
-selectShowPassword passLabel = runInTerm "" $ "zsh -c \"pass " ++ passLabel ++ "| less\""
+selectShowPassword passLabel = runInTerm "" $ "zsh -c \"/home/yzhou/bin/scripts/pass1 " ++ passLabel ++ "| less\""
 
 -- | Generate a 30 characters password for a given entry.
 -- If the entry already exists, it is updated with a new password.
