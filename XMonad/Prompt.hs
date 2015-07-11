@@ -134,7 +134,7 @@ data XPConfig =
         , bgHLight          :: String     -- ^ Background color of a highlighted completion entry
         , borderColor       :: String     -- ^ Border color
         , promptBorderWidth :: !Dimension -- ^ Border width
-        , position          :: XPPosition -- ^ Position: 'Top' or 'Bottom'
+        , position          :: XPPosition -- ^ Position: 'Top', 'Bottom' or 'Middle'
         , alwaysHighlight   :: !Bool      -- ^ Always highlight an item, overriden to True with multiple modes. This implies having *one* column of autocompletions only.
         , height            :: !Dimension -- ^ Window height
         , maxComplRows      :: Maybe Dimension
@@ -229,6 +229,7 @@ class XPrompt t where
 
 data XPPosition = Top
                 | Bottom
+                | Middle
                   deriving (Show,Read)
 
 amberXPConfig, defaultXPConfig, greenXPConfig :: XPConfig
@@ -840,8 +841,9 @@ createWin d rw c s = do
   let (x,y) = case position c of
                 Top -> (0,0)
                 Bottom -> (0, rect_height s - height c)
+                Middle -> (fromIntegral $ rect_width s `div` 5, (rect_height s - height c) `div` 2)
   w <- mkUnmanagedWindow d (defaultScreenOfDisplay d) rw
-                      (rect_x s + x) (rect_y s + fi y) (rect_width s) (height c)
+                      (rect_x s + x) (rect_y s + fi y) (rect_width s - fromIntegral x * 2) (height c)
   mapWindow d w
   return w
 
@@ -952,13 +954,14 @@ getComplWinDim compl = do
       (x,y) = case position c of
                 Top -> (0,ht)
                 Bottom -> (0, (0 + rem_height - actual_height))
+                Middle -> (fromIntegral $ rect_width scr `div` 5, (rect_height scr + ht) `div` 2)
   (asc,desc) <- io $ textExtentsXMF fs $ head compl
   let yp = fi $ (ht + fi (asc - desc)) `div` 2
       xp = (asc + desc) `div` 2
       yy = map fi . take (fi actual_rows) $ [yp,(yp + ht)..]
       xx = take (fi columns) [xp,(xp + max_compl_len)..]
 
-  return (rect_x scr + x, rect_y scr + fi y, wh, actual_height, xx, yy)
+  return (rect_x scr + x, rect_y scr + fi y, wh - fromIntegral x * 2, actual_height, xx, yy)
 
 drawComplWin :: Window -> [String] -> XP ()
 drawComplWin w compl = do
