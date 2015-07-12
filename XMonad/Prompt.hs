@@ -941,7 +941,7 @@ getComplWinDim compl = do
 
   tws <- mapM (textWidthXMF (dpy st) fs) compl
   let max_compl_len =  fromIntegral ((fi ht `div` 2) + maximum tws)
-      columns = max 1 $ wh `div` fi max_compl_len
+      columns = 1 --max 1 $ wh `div` fi max_compl_len
       rem_height =  rect_height scr - ht
       (rows,r) = length compl `divMod` fi columns
       needed_rows = max 1 (rows + if r == 0 then 0 else 1)
