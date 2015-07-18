@@ -203,7 +203,7 @@ instance Eq a => DecorationStyle TabbedDecoration a where
                                          , ev_button     = eb }
         | et == buttonPress
         , Just ((w,_),_) <- findWindowByDecoration ew ds =
-           if eb == button2
+           if eb == button3
                then killWindow w
                else focus w
     decorationEventHook _ _ _ = return ()
@@ -221,7 +221,7 @@ instance Eq a => DecorationStyle TabbedDecoration a where
               esize k h = fi $ maybe k (\i -> loc k h (i+1) - loc k h i) $ w `elemIndex` ws
               wid = esize x wh
               hid = esize y hh
-              n k h = maybe k (loc k h) $ w `elemIndex` ws
+              n k h = maybe k (loc k h) $ (fmap ((-) (length ws - 1)) (w `elemIndex` ws))
               nx = n x wh
               ny = n y hh
               upperTab = Rectangle nx  y wid (fi ht)
